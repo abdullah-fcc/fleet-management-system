@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Requests - Fleet Management</title>
+    <script>
+        fetch('/components/employee-sidebar.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('sidebar-container').innerHTML = data;
+            });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: #1e3a5f;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .sidebar-header p {
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            margin: 5px 0 0 0;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-item {
+            padding: 14px 24px;
+            color: rgba(255,255,255,0.8);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: white;
+            border-left-color: #3b82f6;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            flex: 1;
+            padding: 30px 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+        }
+
+        th {
+            padding: 12px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            color: #1e293b;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #94a3b8;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f3f4f6;
+            color: #1e293b;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .required {
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-container"></div>
+
+    <div class="main-content">
+        <header>
+            <h1>Fuel Requests</h1>
+            <button class="btn btn-primary" onclick="openAddFuelModal()">+ Request Fuel</button>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>My Fuel Requests</h2>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Vehicle</th>
+                        <th>Fuel Type</th>
+                        <th>Quantity (L)</th>
+                        <th>Cost/L</th>
+                        <th>Total Cost</th>
+                        <th>Odometer</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="fuelTableBody">
+                    <tr>
+                        <td colspan="8" class="empty-state">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="addFuelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Request Fuel</h2>
+                <button class="modal-close" onclick="closeAddFuelModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="fuelForm">
+                    <div class="form-group">
+                        <label>Vehicle<span class="required">*</span></label>
+                        <input type="text" id="vehicleDisplay" readonly style="background: #f9fafb;">
+                        <input type="hidden" id="vehicleId">
+                        <div class="info-text">Your assigned vehicle</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Trip (Optional)</label>
+                        <select id="tripSelect">
+                            <option value="">No trip associated</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fuel Type<span class="required">*</span></label>
+                            <select id="fuelType" required>
+                                <option value="">Select type</option>
+                                <option value="Petrol">Petrol</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="CNG">CNG</option>
+                                <option value="Electric">Electric</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Quantity (Liters)<span class="required">*</span></label>
+                            <input type="number" id="quantity" step="0.01" min="0" placeholder="25.5" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cost per Liter (Rs)<span class="required">*</span></label>
+                            <input type="number" id="costPerLiter" step="0.01" min="0" placeholder="280.50" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Total Cost (Rs)</label>
+                            <input type="number" id="totalCostDisplay" step="0.01" readonly style="background: #f9fafb;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Odometer Reading (km)<span class="required">*</span></label>
+                        <input type="number" id="odometer" min="0" placeholder="15000" required>
+                        <div class="info-text" id="odometerHint">Current odometer reading</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fuel Station</label>
+                            <input type="text" id="fuelStation" placeholder="PSO Station">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="location" placeholder="I-8, Islamabad">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Receipt Number</label>
+                        <input type="text" id="receiptNumber" placeholder="RCP-12345">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="notes" placeholder="Additional notes..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeAddFuelModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitFuelRequest()">Submit Request</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let user = JSON.parse(localStorage.getItem('user') || 'null');
+        let myVehicle = null;
+        let currentUserId = 'U004'; // HARDCODED for abdullah
+
+        // If no localStorage, use hardcoded user
+        if (!user || !user.userId) {
+            user = {
+                userId: 'U004',
+                user_id: 'U004',
+                email: '4abdullah.haroon@gmail.com',
+                name: 'abdullah'
+            };
+            console.log('⚠️ Using hardcoded user U004');
+        }
+
+        document.getElementById('quantity')?.addEventListener('input', calculateTotalCost);
+        document.getElementById('costPerLiter')?.addEventListener('input', calculateTotalCost);
+
+        function calculateTotalCost() {
+            const qty = parseFloat(document.getElementById('quantity').value) || 0;
+            const cost = parseFloat(document.getElementById('costPerLiter').value) || 0;
+            document.getElementById('totalCostDisplay').value = (qty * cost).toFixed(2);
+        }
+
+        async function loadData() {
+            try {
+                console.log('🔍 Starting loadData - VERSION 2.0 FIXED');
+                console.log('📦 User from localStorage:', user);
+                
+                // Get current user ID from localStorage
+                currentUserId = user.userId || user.user_id || 'U004';
+                console.log('👤 Current user ID:', currentUserId);
+                
+                // STEP 1: Try to get vehicle from trips (most reliable)
+                const tripsRes = await fetch(`${API_URL}/trips`);
+                const tripsData = await tripsRes.json();
+                console.log('🚗 Trips API response success:', tripsData.success);
+                
+                if (tripsData.success && tripsData.trips && tripsData.trips.length > 0) {
+                    // Filter trips for current user
+                    const myTrips = tripsData.trips.filter(t => t.driver_id === currentUserId);
+                    console.log('✅ Found', myTrips.length, 'trips for user', currentUserId);
+                    
+                    if (myTrips.length > 0) {
+                        // Get vehicle from most recent trip
+                        myVehicle = myTrips[0].vehicle_id;
+                        console.log('🎯 Vehicle from latest trip:', myVehicle);
+                    }
+                }
+                
+                // STEP 2: If no vehicle from trips, try user assignment
+                if (!myVehicle) {
+                    console.log('⚠️ No vehicle from trips, checking user assignment...');
+                    const userRes = await fetch(`${API_URL}/users`);
+                    const userData = await userRes.json();
+                    
+                    if (userData.success && userData.users) {
+                        const currentUser = userData.users.find(u => 
+                            u.user_id === currentUserId || 
+                            u.email === user.email
+                        );
+                        
+                        if (currentUser && currentUser.assigned_vehicle) {
+                            myVehicle = currentUser.assigned_vehicle;
+                            console.log('✅ Vehicle from user assignment:', myVehicle);
+                        }
+                    }
+                }
+                
+                // STEP 3: Load vehicle details
+                if (myVehicle) {
+                    console.log('📍 Loading details for vehicle:', myVehicle);
+                    const vehiclesRes = await fetch(`${API_URL}/vehicles`);
+                    const vehiclesData = await vehiclesRes.json();
+                    
+                    if (vehiclesData.success) {
+                        const vehicle = vehiclesData.vehicles.find(v => v.id === myVehicle);
+                        console.log('🚙 Vehicle details:', vehicle);
+                        
+                        if (vehicle) {
+                            document.getElementById('vehicleDisplay').value = 
+                                `${vehicle.name} (${vehicle.registration || vehicle.number_plate || vehicle.id})`;
+                            document.getElementById('vehicleId').value = vehicle.id;
+                            document.getElementById('odometerHint').textContent = 
+                                `Current: ${vehicle.km || 0} km`;
+                            console.log('✅✅✅ SUCCESS! Vehicle loaded:', vehicle.name);
+                        } else {
+                            console.error('❌ Vehicle not found in vehicles list');
+                        }
+                    }
+                } else {
+                    console.error('❌❌❌ FAILED: No vehicle found from any source');
+                    console.error('Current user ID:', currentUserId);
+                    console.error('User email:', user.email);
+                }
+
+                // STEP 4: Load trips dropdown
+                if (tripsData.success && tripsData.trips) {
+                    const myTrips = tripsData.trips.filter(t => t.driver_id === currentUserId);
+                    const tripSelect = document.getElementById('tripSelect');
+                    tripSelect.innerHTML = '<option value="">No trip associated</option>';
+                    
+                    myTrips.forEach(trip => {
+                        tripSelect.innerHTML += `<option value="${trip.trip_id}">${trip.trip_id} - ${trip.destination}</option>`;
+                    });
+                    console.log('📋 Loaded', myTrips.length, 'trips into dropdown');
+                }
+
+                await loadFuelRecords();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadFuelRecords() {
+            try {
+                const res = await fetch(`${API_URL}/fuel`);
+                const data = await res.json();
+
+                if (data.success) {
+                    const myRecords = data.records.filter(r => r.driver_id === currentUserId);
+                    const tbody = document.getElementById('fuelTableBody');
+                    
+                    if (myRecords.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No fuel requests found. Submit your first request!</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = myRecords.map(r => `
+                        <tr>
+                            <td>${new Date(r.filled_at).toLocaleDateString()}</td>
+                            <td>${r.vehicle_name || 'N/A'}</td>
+                            <td>${r.fuel_type}</td>
+                            <td>${parseFloat(r.quantity_liters).toFixed(2)}</td>
+                            <td>Rs ${parseFloat(r.cost_per_liter).toFixed(2)}</td>
+                            <td>Rs ${parseFloat(r.total_cost).toFixed(2)}</td>
+                            <td>${r.odometer_reading.toLocaleString()} km</td>
+                            <td><span class="badge badge-${r.status}">${r.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading fuel records:', error);
+            }
+        }
+
+        function openAddFuelModal() {
+            console.log('🔘 Open modal clicked. myVehicle =', myVehicle);
+            if (!myVehicle) {
+                alert('No vehicle assigned. Please contact admin.');
+                return;
+            }
+            document.getElementById('addFuelModal').classList.add('active');
+        }
+
+        function closeAddFuelModal() {
+            document.getElementById('addFuelModal').classList.remove('active');
+            document.getElementById('fuelForm').reset();
+        }
+
+        async function submitFuelRequest() {
+            try {
+                console.log('📤 Submitting fuel request...');
+                const form = document.getElementById('fuelForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const requestData = {
+                    vehicle_id: document.getElementById('vehicleId').value,
+                    driver_id: currentUserId,
+                    trip_id: document.getElementById('tripSelect').value || null,
+                    fuel_type: document.getElementById('fuelType').value,
+                    quantity_liters: parseFloat(document.getElementById('quantity').value),
+                    cost_per_liter: parseFloat(document.getElementById('costPerLiter').value),
+                    odometer_reading: parseInt(document.getElementById('odometer').value),
+                    fuel_station: document.getElementById('fuelStation').value || null,
+                    location: document.getElementById('location').value || null,
+                    receipt_number: document.getElementById('receiptNumber').value || null,
+                    notes: document.getElementById('notes').value || null
+                };
+                
+                console.log('📦 Request payload:', requestData);
+
+                const res = await fetch(`${API_URL}/fuel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await res.json();
+                console.log('📥 Server response:', result);
+
+                if (result.success) {
+                    alert('Fuel request submitted! Waiting for admin approval.');
+                    closeAddFuelModal();
+                    loadFuelRecords();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error submitting:', error);
+                alert('Failed to submit. Try again.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
