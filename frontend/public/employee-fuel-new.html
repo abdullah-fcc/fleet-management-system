@@ -516,9 +516,32 @@
 
     <script>
         const API_URL = 'http://localhost:3000/api';
-        const DRIVER_ID = 'U004'; // Hardcoded for abdullah
+        let currentUser = null;
         let myVehicle = null;
         let myVehicleName = '';
+
+        // Authentication check
+        function checkAuth() {
+            const isAuthenticated = sessionStorage.getItem('isAuthenticated');
+            const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+
+            if (isAuthenticated !== 'true' || !user.email) {
+                window.location.href = '/login.html';
+                return false;
+            }
+
+            if (user.role !== 'EMPLOYEE') {
+                window.location.href = '/index.html';
+                return false;
+            }
+
+            currentUser = user;
+            return true;
+        }
+
+        if (!checkAuth()) {
+            throw new Error('Authentication required');
+        }
 
         // Auto-calculate total cost
         document.getElementById('liters')?.addEventListener('input', calculateTotal);
@@ -532,15 +555,16 @@
 
         async function loadData() {
             try {
-                // Get vehicle from trips
-                const tripsRes = await fetch(`${API_URL}/trips`);
-                const tripsData = await tripsRes.json();
+                // Get assigned vehicle from user object
+                myVehicle = currentUser.assignedVehicle || currentUser.assigned_vehicle;
                 
-                if (tripsData.success && tripsData.trips.length > 0) {
-                    const myTrips = tripsData.trips.filter(t => t.driver_id === DRIVER_ID);
-                    if (myTrips.length > 0) {
-                        myVehicle = myTrips[0].vehicle_id;
-                        myVehicleName = myTrips[0].vehicle_name;
+                // If vehicle is assigned, get vehicle details
+                if (myVehicle) {
+                    const vehicleRes = await fetch(`${API_URL}/vehicles/${myVehicle}`);
+                    const vehicleData = await vehicleRes.json();
+                    
+                    if (vehicleData.success && vehicleData.vehicle) {
+                        myVehicleName = `${vehicleData.vehicle.name} (${vehicleData.vehicle.registration})`;
                     }
                 }
 
@@ -557,7 +581,7 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    const myRecords = data.records.filter(r => r.driver_id === DRIVER_ID);
+                    const myRecords = data.records.filter(r => r.driver_id === currentUser.userId);
                     const tbody = document.getElementById('fuelTableBody');
                     
                     if (myRecords.length === 0) {
@@ -588,7 +612,7 @@
 
         function openRequestModal() {
             if (!myVehicle) {
-                alert('No vehicle detected. Please contact admin to assign a vehicle.');
+                alert('No vehicle assigned. Please contact admin to assign a vehicle to your account.');
                 return;
             }
             document.getElementById('vehicleId').value = myVehicle;
@@ -610,7 +634,7 @@
 
             const data = {
                 vehicle_id: document.getElementById('vehicleId').value,
-                driver_id: DRIVER_ID,
+                driver_id: currentUser.userId,
                 fuel_type: document.getElementById('fuelType').value,
                 quantity_liters: parseFloat(document.getElementById('liters').value),
                 cost_per_liter: parseFloat(document.getElementById('costPerLiter').value),
