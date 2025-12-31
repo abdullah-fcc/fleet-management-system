@@ -718,9 +718,37 @@
             font-weight: 700;
             color: #1e293b;
         }
+
+        /* Mobile elements hidden by default */
+        .mobile-header {
+            display: none;
+        }
+
+        .menu-toggle {
+            display: none;
+        }
+
+        .sidebar-overlay {
+            display: none;
+        }
     </style>
+    <link rel="stylesheet" href="/css/mobile-responsive.css">
 </head>
 <body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            ☰
+        </button>
+        <div class="logo-text">
+            <span>🚗 Fleet Management</span>
+        </div>
+        <div></div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
     <!-- Sidebar Navigation -->
     <div id="sidebar-container"></div>
 
@@ -1612,6 +1640,45 @@
 
         // Load dashboard on page load
         loadDashboard();
+
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            }
+        }
+
+        // Close sidebar when clicking a link on mobile
+        if (window.innerWidth <= 768) {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.sidebar a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        const sidebar = document.querySelector('.sidebar');
+                        const overlay = document.querySelector('.sidebar-overlay');
+                        if (sidebar && overlay) {
+                            sidebar.classList.remove('active');
+                            overlay.classList.remove('active');
+                        }
+                    });
+                });
+            });
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                if (sidebar && overlay) {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
     </script>
     </div>
     </div>

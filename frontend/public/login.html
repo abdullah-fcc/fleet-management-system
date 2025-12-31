@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Fleet Management System</title>
     <link rel="stylesheet" href="css/auth-styles.css">
+    <link rel="stylesheet" href="/css/mobile-responsive.css">
 </head>
 <body>
     <div class="auth-wrapper">
         <div class="auth-container">
             <div class="auth-header" style="text-align:center;">
-                <img src="/assets/logo.svg" alt="Fleet Manager Logo" class="logo">
+                <img src="/assets/logo.svg" alt="Fleet Manager Logo" class="logo" style="width: 100px; height: 100px; object-fit: contain; margin: 0 auto 1rem; display: block;">
                 <h1 class="auth-title">Fleet Management</h1>
                 <p>Login to access your dashboard</p>
             </div>
@@ -80,7 +81,7 @@
             loginBtn.innerHTML = '<span class="spinner"></span><span>Logging in...</span>';
 
             try {
-                const response = await fetch('http://localhost:3000/api/auth/login', {
+                const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
