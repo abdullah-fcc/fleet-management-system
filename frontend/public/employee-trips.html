@@ -17,7 +17,47 @@
             .then(response => response.text())
             .then(data => {
                 document.getElementById('sidebar-container').innerHTML = data;
+                setupMobileSidebar();
             });
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar') || document.querySelector('#sidebar-container > div');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            }
+        }
+
+        function setupMobileSidebar() {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar') || document.querySelector('#sidebar-container > div');
+                if (sidebar) {
+                    const links = sidebar.querySelectorAll('a');
+                    links.forEach(link => {
+                        link.addEventListener('click', () => {
+                            const sidebarEl = document.querySelector('.sidebar') || document.querySelector('#sidebar-container > div');
+                            const overlay = document.querySelector('.sidebar-overlay');
+                            if (sidebarEl && overlay) {
+                                sidebarEl.classList.remove('active');
+                                overlay.classList.remove('active');
+                            }
+                        });
+                    });
+                }
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                const sidebar = document.querySelector('.sidebar') || document.querySelector('#sidebar-container > div');
+                const overlay = document.querySelector('.sidebar-overlay');
+                if (sidebar && overlay) {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
     </script>
     
     <style>
@@ -728,6 +768,20 @@
     </style>
 </head>
 <body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            ☰
+        </button>
+        <div class="logo-text">
+            <span>Fleet Management</span>
+        </div>
+        <div></div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
     <!-- Sidebar Container -->
     <div id="sidebar-container"></div>
 
