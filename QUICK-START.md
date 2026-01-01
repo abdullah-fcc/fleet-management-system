@@ -15,7 +15,7 @@ ssh -i your-key.pem ec2-user@YOUR_EC2_IP
 
 ### 3. Deploy Application
 ```bash
-# One-command deployment
+# One-command deplopm2 statusyment
 curl -o setup.sh https://raw.githubusercontent.com/abdullah-fcc/fleet-management-system/main/quick-setup.sh && bash setup.sh
 ```
 
